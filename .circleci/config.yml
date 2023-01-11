@@ -1,0 +1,26 @@
+version: 2.1
+orbs:
+  docker: circleci/docker@2.2.0
+jobs:
+  build-and-push:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          image: apsgangwar/ballot
+          tag: '$CIRCLE_SHA1,latest'
+          path: ./ballot/
+          docker-context: ./ballot
+      - docker/push:
+          digest-path: /tmp/digest.txt
+          image: apsgangwar/ballot
+          tag: '$CIRCLE_SHA1,latest'
+      - run:
+          command: |
+            echo "Digest is: $(</tmp/digest.txt)"
+workflows:
+  commit:
+    jobs:
+      - build-and-push
